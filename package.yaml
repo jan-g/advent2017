@@ -1,0 +1,61 @@
+name:                advent2017
+version:             0.1.0.0
+github:              "jan-g/advent2017"
+license:             BSD3
+author:              "jan grant"
+maintainer:          "example@example.com"
+copyright:           "2020 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/advent2016#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- array
+- split
+- containers
+- sort
+- cryptohash-md5
+- bytestring
+- utf8-string
+- base16-bytestring
+- strings >= 1.1
+- matrix
+- hex-text
+- heap >= 1.0.4
+
+library:
+  source-dirs: src
+
+executables:
+  advent2017-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - advent2017
+
+tests:
+  advent2017-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - advent2017
+    - hspec >= 2.5.5
