@@ -57,12 +57,20 @@ l2m xs = xs & zip [0..] & Map.fromList
 m2l m  = m & Map.toAscList & map snd
 
 shuffle n seen banks =
-  if Set.member banks seen then n
+  if Set.member banks seen then (n, banks)
   else shuffle (n + 1) (Set.insert banks seen) (redistribute banks)
 
 day6 ls = parse ls & shuffle 0 Set.empty
 
 {-
+--- Part Two ---
+
+Out of curiosity, the debugger would also like to know the size of the loop: starting from a state that has already been seen, how many block redistribution cycles must be performed before that same state is seen again?
+
+In the example above, 2 4 1 2 is seen again after four cycles, and so the answer in that example would be 4.
+
+How many cycles are in the infinite loop that arises from the configuration in your puzzle input?
 -}
 
-day6b ls = "hello world"
+day6b ls = let (_, banks) = parse ls & shuffle 0 Set.empty
+           in  shuffle 0 Set.empty banks & fst
