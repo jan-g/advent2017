@@ -10,6 +10,7 @@ import Data.List.Split (splitOn)
 import Data.List as L
 import Data.Maybe (catMaybes, fromJust)
 import qualified Data.ByteString.UTF8 as BSU
+import qualified Text.ParserCombinators.ReadP as P
 
 import Lib
 import qualified Day1
@@ -93,7 +94,7 @@ main =
             ] $ \(i,o) -> do
         it ("redistributes " ++ show i) $ do
           (i & Day6.l2m & Day6.redistribute & Day6.m2l) `shouldBe` o
-    
+
       it "works out the size of the loop" $ do
         fst (Day6.shuffle 0 Set.empty (Day6.l2m [0, 2, 7, 0])) `shouldBe` 5
 
@@ -124,3 +125,16 @@ main =
       it "runs the example" $ do
         let regs = Day8.run prog Map.empty
         map (Day8.fetch regs) ["a", "b", "c" ] `shouldBe` [1, 0, -10]
+
+    describe "day 9" $ do
+      forM_ [("{}", 1)
+            ,("{{{}}}", 6)
+            ,("{{},{}}", 5)
+            ,("{{{},{},{{}}}}", 16)
+            ,("{<a>,<a>,<a>,<a>}", 1)
+            ,("{{<ab>},{<ab>},{<ab>},{<ab>}}", 9)
+            ,("{{<!!>},{<!!>},{<!!>},{<!!>}}", 9)
+            ,("{{<a!>},{<a!>},{<a!>},{<ab>}}", 3)
+            ] $ \(i, o) -> do
+        it ("evaluates " ++ i) $ do
+          quickParse (Day9.grp 1 <* P.eof) i `shouldBe` Just o
