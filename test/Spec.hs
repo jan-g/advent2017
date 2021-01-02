@@ -83,3 +83,16 @@ main =
             ] $ \(i,o) -> do
         it ("extra-validates " ++ show i) $ do
           Day4.valid' (words i) `shouldBe` o
+
+    describe "day 6" $ do
+      forM_ [([0, 2, 7, 0], [2, 4, 1, 2])
+            ,([2, 4, 1, 2], [3, 1, 2, 3])
+            ,([3, 1, 2, 3], [0, 2, 3, 4])
+            ,([0, 2, 3, 4], [1, 3, 4, 1])
+            ,([1, 3, 4, 1], [2, 4, 1, 2])
+            ] $ \(i,o) -> do
+        it ("redistributes " ++ show i) $ do
+          (i & Day6.l2m & Day6.redistribute & Day6.m2l) `shouldBe` o
+    
+      it "works out the size of the loop" $ do
+        Day6.shuffle 0 Set.empty (Day6.l2m [0, 2, 7, 0]) `shouldBe` 5
