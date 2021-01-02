@@ -44,4 +44,6 @@ main =
   hspec $ do
     describe "Day1" $ do
       it "correctly runs on the test data" $ do
-        True `shouldBe` True
+        Day1.day1 ["91212129"] `shouldBe` 9
+      it "does part 2" $ do
+        Day1.day1b ["12131415"] `shouldBe` 4
