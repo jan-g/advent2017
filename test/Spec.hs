@@ -114,3 +114,13 @@ main =
           stack = Day7.parse example
       it "locates the base" $ do
         Day7.base stack `shouldBe` "tknk"
+
+    describe "day 8" $ do
+      let example = "b inc 5 if a > 1\n\
+                    \a inc 1 if b < 5\n\
+                    \c dec -10 if a >= 1\n\
+                    \c inc -20 if c == 10" & lines
+          prog = Day8.parse example
+      it "runs the example" $ do
+        let regs = Day8.run prog Map.empty
+        map (Day8.fetch regs) ["a", "b", "c" ] `shouldBe` [1, 0, -10]
