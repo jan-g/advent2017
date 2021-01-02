@@ -95,4 +95,22 @@ main =
           (i & Day6.l2m & Day6.redistribute & Day6.m2l) `shouldBe` o
     
       it "works out the size of the loop" $ do
-        Day6.shuffle 0 Set.empty (Day6.l2m [0, 2, 7, 0]) `shouldBe` 5
+        fst (Day6.shuffle 0 Set.empty (Day6.l2m [0, 2, 7, 0])) `shouldBe` 5
+
+    describe "day 7" $ do
+      let example = "pbga (66)\n\
+                    \xhth (57)\n\
+                    \ebii (61)\n\
+                    \havc (66)\n\
+                    \ktlj (57)\n\
+                    \fwft (72) -> ktlj, cntj, xhth\n\
+                    \qoyq (66)\n\
+                    \padx (45) -> pbga, havc, qoyq\n\
+                    \tknk (41) -> ugml, padx, fwft\n\
+                    \jptl (61)\n\
+                    \ugml (68) -> gyxo, ebii, jptl\n\
+                    \gyxo (61)\n\
+                    \cntj (57)" & lines
+          stack = Day7.parse example
+      it "locates the base" $ do
+        Day7.base stack `shouldBe` "tknk"
