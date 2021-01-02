@@ -67,3 +67,11 @@ main =
       forM_ [(1,0), (12,3), (23, 2), (1024,31)] $ \(i,o) -> do
         it ("computes example manhattan distance for " ++ show i) $ do
           Day3.manh (Day3.position i) `shouldBe` o
+
+    describe "day 4" $ do
+      forM_ [("aa bb cc dd ee", True)
+            ,("aa bb cc dd aa", False)
+            ,("aa bb cc dd aaa", True)
+            ] $ \(i,o) -> do
+        it ("validates " ++ show i) $ do
+          Day4.valid (words i) `shouldBe` o
