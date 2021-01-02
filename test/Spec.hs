@@ -75,3 +75,11 @@ main =
             ] $ \(i,o) -> do
         it ("validates " ++ show i) $ do
           Day4.valid (words i) `shouldBe` o
+      forM_ [("abcde fghij", True)
+            ,("abcde xyz ecdab", False)
+            ,("a ab abc abd abf abj", True)
+            ,("iiii oiii ooii oooi oooo", True)
+            ,("oiii ioii iioi iiio", False)
+            ] $ \(i,o) -> do
+        it ("extra-validates " ++ show i) $ do
+          Day4.valid' (words i) `shouldBe` o
