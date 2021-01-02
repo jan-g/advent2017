@@ -84,6 +84,17 @@ day8 ls =
   in  maximum regs
 
 {-
+--- Part Two ---
+
+To be safe, the CPU also needs to know the highest value held in any register during this process so that it can decide how much memory to allocate to these operations. For example, in the above instructions, the highest value ever held was 10 (in register c after the third instruction was evaluated).
 -}
 
-day8b ls = "hello world"
+run' prog regs = foldl (\(m, r) i -> let r' = step r i
+                                     in (max m (maximum r'), r'))
+                       (0, regs) prog
+
+
+day8b ls =
+  let prog = parse ls
+      (m, regs) = run' prog Map.empty
+  in  m
