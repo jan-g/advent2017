@@ -11,6 +11,8 @@ import Data.List as L
 import Data.Maybe (catMaybes, fromJust)
 import qualified Data.ByteString.UTF8 as BSU
 import qualified Text.ParserCombinators.ReadP as P
+import qualified Data.Sequence as Seq
+import Data.Foldable (toList)
 
 import Lib
 import qualified Day1
@@ -138,3 +140,25 @@ main =
             ] $ \(i, o) -> do
         it ("evaluates " ++ i) $ do
           quickParse (Day9.grp 1 <* P.eof) i `shouldBe` Just o
+
+    describe "day 10" $ do
+      let r0 = Day10.ring 5
+      it "does the example" $ do
+        let r1 = Day10.step 0 r0 3
+        toList r1 `shouldBe` [3, 4, 2, 1, 0]
+        let r2 = Day10.step 1 r1 4
+        toList r2 `shouldBe` [1, 2, 4, 3, 0]
+        let r3 = Day10.step 2 r2 1
+        toList r3 `shouldBe` [3, 0, 1, 2, 4]
+--        let r4 = Day10.step 3 r3 5
+--        toList r4 `shouldBe` [0, 3, 4, 2, 1]
+
+--        toList (Day10.rotate (-(0 + 1 + 2 + 3 + 3 + 4 + 1 + 5)) r4) `shouldBe` [3, 4, 2, 1, 0]
+
+      forM_ [("", "a2582a3a0e66e6e86e3812dcb672a272")
+            ,("AoC 2017", "33efeb34ea91902bb2f59c9920caa6cd")
+            ,("1,2,3", "3efbe78a8d82f29979031a4aa0b16a9d")
+            ,("1,2,4", "63960835bcdc130f0b66d7ff4f6a5a8e")
+            ] $ \(i, o) -> do
+        it ("evaluates " ++ i) $ do
+          Day10.day10b [i] `shouldBe` o
