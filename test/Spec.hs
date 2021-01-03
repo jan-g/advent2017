@@ -183,3 +183,7 @@ main =
         Day13.day13 example `shouldBe` 24
       it "works out the answer for part b" $ do
         Day13.day13b example `shouldBe` 10
+
+    describe "day 14" $ do
+      it "works out the example for part a" $
+        Day14.day14 ["flqrgnkx"] `shouldBe` 8108
