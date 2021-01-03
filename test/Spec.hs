@@ -276,4 +276,30 @@ main =
           prog = Day18.parse example
       it "runs the example" $ do
         Day18.run prog 0 Map.empty `shouldBe` Just 4
+      
+      
+      let example = "snd 1\n\
+                    \snd 2\n\
+                    \snd p\n\
+                    \rcv a\n\
+                    \rcv b\n\
+                    \rcv c\n\
+                    \rcv d" & lines
+          prog = Day18.parse example
+      it "runs in parallel" $ do
+        let p0 = (Map.empty, 0, [], [])
+            p1 = (Map.singleton 'p' 1, 0, [], [])
+            (p0', p1') = Day18.parallel1 prog p0 p1
+            (p1'', p0'') = Day18.parallel2 prog p1 p0
+        
+        p0' `shouldBe` p0''
+        p1' `shouldBe` p1''
+        let (r0, _, [], s0) = p0'
+            (r1, _, [], s1) = p1'
+        
+        r0 `shouldBe` Map.fromList [('a', 1), ('b', 2), ('c', 1)]
+        r1 `shouldBe` Map.fromList [('a', 1), ('b', 2), ('c', 0), ('p', 1)]
+        
+        s0 `shouldBe` [1, 2, 0]
+        s1 `shouldBe` [1, 2, 1]
         
