@@ -196,4 +196,10 @@ main =
         Set.size cs `shouldBe` 1242
         Set.member first cs `shouldBe` True
         
-            
+    describe "day 15" $ do
+      it "generates values" $ do
+        take 6 (Day15.generator Day15.facA 65) `shouldBe` [65, 1092455, 1181022009, 245556042, 1744312007, 1352636452]
+        take 6 (Day15.generator Day15.facB 8921) `shouldBe` [8921, 430625591, 1233683848, 1431495498, 137874439, 285222916]
+   
+      it "finds matches" $ do
+        Day15.findPairs 40000000 (65, 8921) `shouldBe` 588

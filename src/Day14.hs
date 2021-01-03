@@ -106,7 +106,7 @@ cliques found maze =
     Nothing -> found
     Just (x, y) ->
       let Left clique = flood (next maze) (const False) id (0, (x, y))
-      in trace ("found clique: " ++ show clique) $ 
+      in -- trace ("found clique: " ++ show clique) $ 
          cliques (Set.insert clique found) (Set.difference maze clique)
 
 next maze (c, (x, y)) = Set.fromList (neighbours orthogonalMoves (x, y))
