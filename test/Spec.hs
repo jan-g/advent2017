@@ -245,4 +245,21 @@ main =
               final = Day16.run init prog
           Day16.finish final `shouldBe` f
           Day16.circuits final `shouldBe` (words "a b c d e", words o)
-      
+
+    describe "day 17" $ do
+      it "runs the example" $ do
+        let i = Day17.seq0
+        (scanl (Day17.move 3) i [1..9] & map toList)
+          `shouldBe` [ [0]
+                     , [1, 0]
+                     , [2, 1, 0]
+                     , [3, 1, 0, 2]
+                     , [4, 3, 1, 0, 2]
+                     , [5, 2, 4, 3, 1, 0]
+                     , [6, 1, 0, 5, 2, 4, 3]
+                     , [7, 2, 4, 3, 6, 1, 0, 5]
+                     , [8, 6, 1, 0, 5, 7, 2, 4, 3]
+                     , [9, 5, 7, 2, 4, 3, 8, 6, 1, 0]
+                     ]     
+                   
+  
