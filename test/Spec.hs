@@ -195,14 +195,36 @@ main =
             first = Set.fromList [(0, 0), (1, 0), (1, 1)]
         Set.size cs `shouldBe` 1242
         Set.member first cs `shouldBe` True
-        
+
     describe "day 15" $ do
       it "generates values" $ do
         take 6 (Day15.generator Day15.facA 65) `shouldBe` [65, 1092455, 1181022009, 245556042, 1744312007, 1352636452]
         take 6 (Day15.generator Day15.facB 8921) `shouldBe` [8921, 430625591, 1233683848, 1431495498, 137874439, 285222916]
-   
+
       it "finds matches" $ do
         Day15.findPairs 40000000 (65, 8921) `shouldBe` 588
       it "finds matches using the slower generators" $ do
         Day15.findPairs' 5000000 (65, 8921) `shouldBe` 309
-        
+
+    describe "day 16" $ do
+      forM_ [("s1", [Day16.Spin 1])
+            ] $ \(i, o) -> do
+        it ("parses " ++ i) $ do
+          Day16.parse [i] `shouldBe` o
+
+      let init = Day16.initState "abcde"
+          prog = Day16.parse ["s1,x3/4,pe/b"]
+
+      it "spins" $ do
+        Day16.finish (Day16.move (Day16.initState "abcde") (Day16.Spin 3)) `shouldBe` "cdeab"
+
+      it "runs the example dance" $ do
+        let intermediates = scanl Day16.move init prog
+            values = map Day16.finish intermediates
+        values `shouldBe` ["abcde", "eabcd", "eabdc", "baedc"]
+
+      it "runs a swapping dance" $ do
+        let prog = Day16.parse ["pa/b,pa/b,pa/b,pb/c"]
+            intermediates = scanl Day16.move init prog
+            values = map Day16.finish intermediates
+        values `shouldBe` ["abcde", "bacde", "abcde", "bacde", "cabde"]
