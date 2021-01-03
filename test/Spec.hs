@@ -302,4 +302,15 @@ main =
         
         s0 `shouldBe` [1, 2, 0]
         s1 `shouldBe` [1, 2, 1]
-        
+
+    describe "day 19" $ do
+      let example = "     |          \n\
+                    \     |  +--+    \n\
+                    \     A  |  C    \n\
+                    \ F---|----E|--+ \n\
+                    \     |  |  |  D \n\
+                    \     +B-+  +--+ " & lines
+          maze = Day19.parse example
+      it "traces the example" $ do
+        let (p0, d0) = Day19.start maze
+        Day19.chase maze p0 d0 "" `shouldBe` "ABCDEF"
