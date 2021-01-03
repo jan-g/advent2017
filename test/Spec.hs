@@ -162,3 +162,15 @@ main =
             ] $ \(i, o) -> do
         it ("evaluates " ++ i) $ do
           Day10.day10b [i] `shouldBe` o
+
+    describe "day 11" $ do
+      forM_ [ ("ne,ne,ne", (3,0,-3), 3)
+            , ("ne,ne,sw,sw", (0,0,0), 0)
+            , ("ne,ne,s,s", (2,-2,0), 2)
+            , ("se,sw,se,sw,sw", (-1,-2,3), 3)
+            ] $ \(i,o,d) -> do
+        it ("follows the path " ++ i) $ do
+          let pos = Day11.follow (0,0,0) (Day11.parse [i])
+          pos `shouldBe` o
+          Day11.manh pos `shouldBe` d
+
