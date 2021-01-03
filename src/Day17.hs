@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Day17 where
 
 import Data.Function ((&))
@@ -12,6 +14,8 @@ import Text.ParserCombinators.ReadP as P
 import Numeric (readInt)
 import Data.Bits ((.&.), (.|.))
 import qualified Data.Sequence as Seq
+import Data.Foldable (toList)
+import Debug.Trace (trace)
 
 import Lib
 
@@ -57,9 +61,10 @@ Your puzzle input is 369.
 parse :: [String] -> Int
 parse ls = ls & head & read
 
+seq0 :: Seq.Seq Int
 seq0 = Seq.singleton 0
 
-move step seq n = let (a, b) = Seq.splitAt ((step + 1) `mod` Seq.length seq) seq
+move step !seq n = let (a, b) = Seq.splitAt ((step + 1) `mod` Seq.length seq) seq
                   in  n Seq.:<| b Seq.>< a
 
 day17 ls =
@@ -69,6 +74,52 @@ day17 ls =
 
 
 {-
+--- Part Two ---
+
+The spinlock does not short-circuit. Instead, it gets more angry. At least, you assume that's what happened; it's spinning significantly faster than it was a moment ago.
+
+You have good news and bad news.
+
+The good news is that you have improved calculations for how to stop the spinlock. They indicate that you actually need to identify the value after 0 in the current state of the circular buffer.
+
+The bad news is that while you were determining this, the spinlock has just finished inserting its fifty millionth value (50000000).
+
+What is the value after 0 the moment 50000000 is inserted?
 -}
 
-day17b ls = "hello world"
+day17b' ls =
+  dropZero seq
+  where
+    seq = repeatTo 50000000 1 seq0
+    dropZero :: Seq.Seq Int -> Int
+    dropZero (0 Seq.:<| s) = fromJust (s Seq.!? 0)
+    dropZero (_ Seq.:<| s) = dropZero s
+    dropZero _ = let (first Seq.:<| _) = seq
+                 in first
+    step = parse ls
+    repeatTo n i seq =
+      if i > n then seq
+      else let !s' = move step seq i
+           in  if i `mod` 1000000 == 0
+               then trace (show i) $
+                    repeatTo n (succ i) s'
+               else repeatTo n (succ i) s'
+
+day17b ls =
+  let first = 1
+      pos = 1
+      len = 2
+  in update (first, pos, len)
+  where
+    step = parse ls
+    update (first, pos, len) =
+      let !pos' = (pos + step) `mod` len
+          !len' = len + 1
+          !first' = if pos' == 0 then len else first
+          !next = (first', (pos' + 1) `mod` len', len')
+      in if len == 50000000
+         then first'
+         else if len `mod` 1000000 == 0
+              then trace (show len) $
+                   update next
+              else update next
