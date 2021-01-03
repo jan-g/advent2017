@@ -203,3 +203,6 @@ main =
    
       it "finds matches" $ do
         Day15.findPairs 40000000 (65, 8921) `shouldBe` 588
+      it "finds matches using the slower generators" $ do
+        Day15.findPairs' 5000000 (65, 8921) `shouldBe` 309
+        
