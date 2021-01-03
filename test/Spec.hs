@@ -313,4 +313,5 @@ main =
           maze = Day19.parse example
       it "traces the example" $ do
         let (p0, d0) = Day19.start maze
-        Day19.chase maze p0 d0 "" `shouldBe` "ABCDEF"
+        Day19.chase maze p0 d0 "" 0 `shouldBe` ("ABCDEF", 38)
+        

@@ -50,27 +50,54 @@ parse ls = loadMap ls
 day19 ls =
   let maze = parse ls
       (p0, d0) = start maze
-  in chase maze p0 d0 []
+  in chase maze p0 d0 [] 0
 
 start maze = let [((x0, y0), _)] = maze
                                  & Map.filterWithKey (\(x, y) c -> y == 0 && c == '|')
                                  & Map.toList
              in ((x0, y0), (0, 1))
 
-chase maze (x,y) (dx, dy) seen =
+chase maze (x,y) (dx, dy) seen steps =
   case Map.lookup (x, y) maze of
-    Nothing -> seen
-    Just '|' -> chase maze (x+dx, y+dy) (dx, dy) seen
-    Just '-' -> chase maze (x+dx, y+dy) (dx, dy) seen
+    Nothing -> (seen, steps)
+    Just '|' -> chase maze (x+dx, y+dy) (dx, dy) seen (succ steps)
+    Just '-' -> chase maze (x+dx, y+dy) (dx, dy) seen (succ steps)
     Just '+' -> let lt = fromMaybe ' ' $ Map.lookup (x-dy, y+dx) maze
                     rt = fromMaybe ' ' $ Map.lookup (x+dy, y-dx) maze
-                in if lt == ' ' then chase maze (x+dy, y-dx) (dy, -dx) seen
-                                else chase maze (x-dy, y+dx) (-dy, dx) seen
+                in if lt == ' ' then chase maze (x+dy, y-dx) (dy, -dx) seen (succ steps)
+                                else chase maze (x-dy, y+dx) (-dy, dx) seen (succ steps)
     Just a   -> if isAlpha a
-                then chase maze (x+dx, y+dy) (dx, dy) (seen ++ [a])
-                else seen
+                then chase maze (x+dx, y+dy) (dx, dy) (seen ++ [a]) (succ steps)
+                else (seen, steps)
                              
 {-
+--- Part Two ---
+
+The packet is curious how many steps it needs to go.
+
+For example, using the same routing diagram from the example above...
+
+     |          
+     |  +--+    
+     A  |  C    
+ F---|--|-E---+ 
+     |  |  |  D 
+     +B-+  +--+ 
+
+...the packet would go:
+
+    6 steps down (including the first line at the top of the diagram).
+    3 steps right.
+    4 steps up.
+    3 steps right.
+    4 steps down.
+    3 steps right.
+    2 steps up.
+    13 steps left (including the F it stops on).
+
+This would result in a total of 38 steps.
+
+How many steps does the packet need to go?
 -}
 
-day19b ls = "hello world"
+day19b = day19
