@@ -228,3 +228,21 @@ main =
             intermediates = scanl Day16.move init prog
             values = map Day16.finish intermediates
         values `shouldBe` ["abcde", "bacde", "abcde", "bacde", "cabde"]
+
+      forM_ [ ("abcde", "a b c d e")
+            , ("bacde", "ab c d e")
+            , ("baecd", "ab ced")
+            , ("acdeb", "a bcde")
+            ] $ \(i,o) -> do
+        it ("computes the circuits for swapping " ++ i) $ do
+          Day16.circuits (Day16.initState i) `shouldBe` (words o, sort i & splitOn "" & filter (/=[]))
+
+      forM_ [ ("pa/b,pb/c,pc/a", "acbde", "a bc d e")
+            ] $ \(i,f,o) -> do
+        it ("computes the circuits for partnering " ++ i) $ do
+          let init = Day16.initState "abcde"
+              prog = Day16.parse [i]
+              final = Day16.run init prog
+          Day16.finish final `shouldBe` f
+          Day16.circuits final `shouldBe` (words "a b c d e", words o)
+      
