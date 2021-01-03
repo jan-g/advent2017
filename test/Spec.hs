@@ -174,3 +174,12 @@ main =
           pos `shouldBe` o
           Day11.manh pos `shouldBe` d
 
+    describe "day 13" $ do
+      let example = "0: 3\n\
+                    \1: 2\n\
+                    \4: 4\n\
+                    \6: 4" & lines
+      it "works out the example for part a" $ do
+        Day13.day13 example `shouldBe` 24
+      it "works out the answer for part b" $ do
+        Day13.day13b example `shouldBe` 10
