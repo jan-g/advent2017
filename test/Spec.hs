@@ -187,3 +187,13 @@ main =
     describe "day 14" $ do
       it "works out the example for part a" $
         Day14.day14 ["flqrgnkx"] `shouldBe` 8108
+
+      it "works out the cliques for the example" $ do
+        let maze = Day14.mazeFromKey "flqrgnkx"
+        Set.size maze `shouldBe` 8108
+        let cs = Day14.cliques Set.empty maze
+            first = Set.fromList [(0, 0), (1, 0), (1, 1)]
+        Set.size cs `shouldBe` 1242
+        Set.member first cs `shouldBe` True
+        
+            

@@ -23,6 +23,7 @@ module Lib
     , combineDiophantine
     , search, bfs, flood
     , aStar
+    , orthogonalMoves, kingsMoves, neighbours
     ) where
 
 import Data.Array
@@ -281,3 +282,9 @@ aStar' nextStates finished cost heuristic summariseState visited queue
         else if Set.member summary visited
         then aStar' nextStates finished cost heuristic summariseState visited queue'
         else aStar' nextStates finished cost heuristic summariseState (Set.insert summary visited) queue''
+
+
+-- handy lists of directions
+orthogonalMoves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+kingsMoves = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+neighbours dirs (x, y) = [(x+dx, y + dy) | (dx,dy) <- dirs]

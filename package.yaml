@@ -33,6 +33,7 @@ dependencies:
 - matrix
 - hex-text
 - heap >= 1.0.4
+- text >= 1.2.4.0
 
 library:
   source-dirs: src
