@@ -260,6 +260,20 @@ main =
                      , [7, 2, 4, 3, 6, 1, 0, 5]
                      , [8, 6, 1, 0, 5, 7, 2, 4, 3]
                      , [9, 5, 7, 2, 4, 3, 8, 6, 1, 0]
-                     ]     
-                   
-  
+                     ]
+
+    describe "day 18" $ do
+      let example = "set a 1\n\
+                    \add a 2\n\
+                    \mul a a\n\
+                    \mod a 5\n\
+                    \snd a\n\
+                    \set a 0\n\
+                    \rcv a\n\
+                    \jgz a -1\n\
+                    \set a 1\n\
+                    \jgz a -2" & lines
+          prog = Day18.parse example
+      it "runs the example" $ do
+        Day18.run prog 0 Map.empty `shouldBe` Just 4
+        
