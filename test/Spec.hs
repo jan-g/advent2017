@@ -375,4 +375,28 @@ main =
         let ans = Day24.srch 0 bridges
             strs = map Day24.strength ans
         maximum strs `shouldBe` 31
+
+    describe "day 25" $ do
+      it "parses" $ do
+        let ex1 = "  If the current value is 0:\n\
+                  \    - Write the value 1.\n\
+                  \    - Move one slot to the right.\n\
+                  \    - Continue with state B.\n"
+
+        quickParse (Day25.tokenRule <* P.eof) ex1
+          `shouldBe` Just (0, (1, Day25.R, 'B'))
         
+        let ex2 = "In state A:\n\
+                  \  If the current value is 0:\n\
+                  \    - Write the value 1.\n\
+                  \    - Move one slot to the right.\n\
+                  \    - Continue with state B.\n\
+                  \  If the current value is 1:\n\
+                  \    - Write the value 0.\n\
+                  \    - Move one slot to the left.\n\
+                  \    - Continue with state E.\n"
+        quickParse (Day25.stateRule <* P.eof) ex2
+          `shouldBe` Just ('A', Map.fromList [
+                           (0, (1, Day25.R, 'B')),
+                           (1, (0, Day25.L, 'E'))])
+                      
