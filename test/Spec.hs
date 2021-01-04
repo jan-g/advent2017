@@ -360,4 +360,19 @@ main =
           moves = iterate (Day22.step') (p, d, 0, cells)
       it "runs for 100 moves" $ do
         Day22.infections (moves !! 100) `shouldBe` 26
+
+    describe "day 23" $ do
+      let example = "0/2\n\
+                    \2/2\n\
+                    \2/3\n\
+                    \3/4\n\
+                    \3/5\n\
+                    \0/1\n\
+                    \10/1\n\
+                    \9/10" & lines
+          bridges = Day24.parse example
+      it "works out the example" $ do
+        let ans = Day24.srch 0 bridges
+            strs = map Day24.strength ans
+        maximum strs `shouldBe` 31
         

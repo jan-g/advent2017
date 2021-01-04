@@ -7,7 +7,7 @@ import Data.Array as A
 import qualified Data.Set as Set
 import qualified Data.Map.Strict as Map
 import Data.Char
-import Data.Maybe (catMaybes, isJust, fromJust)
+import Data.Maybe (catMaybes, isJust, fromJust, fromMaybe)
 import Text.ParserCombinators.ReadP as P
 import Numeric (readInt)
 import Data.Bits ((.&.), (.|.))
@@ -16,14 +16,85 @@ import Lib
 
 
 {-
+--- Day 24: Electromagnetic Moat ---
+
+The CPU itself is a large, black building surrounded by a bottomless pit. Enormous metal tubes extend outward from the side of the building at regular intervals and descend down into the void. There's no way to cross, but you need to get inside.
+
+No way, of course, other than building a bridge out of the magnetic components strewn about nearby.
+
+Each component has two ports, one on each end. The ports come in all different types, and only matching types can be connected. You take an inventory of the components by their port types (your puzzle input). Each port is identified by the number of pins it uses; more pins mean a stronger connection for your bridge. A 3/7 component, for example, has a type-3 port on one side, and a type-7 port on the other.
+
+Your side of the pit is metallic; a perfect surface to connect a magnetic, zero-pin port. Because of this, the first port you use must be of type 0. It doesn't matter what type of port you end with; your goal is just to make the bridge as strong as possible.
+
+The strength of a bridge is the sum of the port types in each component. For example, if your bridge is made of components 0/3, 3/7, and 7/4, your bridge has a strength of 0+3 + 3+7 + 7+4 = 24.
+
+For example, suppose you had the following components:
+
+0/2
+2/2
+2/3
+3/4
+3/5
+0/1
+10/1
+9/10
+
+With them, you could make the following valid bridges:
+
+    0/1
+    0/1--10/1
+    0/1--10/1--9/10
+    0/2
+    0/2--2/3
+    0/2--2/3--3/4
+    0/2--2/3--3/5
+    0/2--2/2
+    0/2--2/2--2/3
+    0/2--2/2--2/3--3/4
+    0/2--2/2--2/3--3/5
+
+(Note how, as shown by 10/1, order of ports within a component doesn't matter. However, you may only use each port on a component once.)
+
+Of these bridges, the strongest one is 0/1--10/1--9/10; it has a strength of 0+1 + 1+10 + 10+9 = 31.
+
+What is the strength of the strongest bridge you can make with the components you have available?
+
+To begin, get your puzzle input.
 -}
 
-parse ls = ls
-         & head
-         & splitOn "-"
-         & map read
+parse ls =
+  let oneWay = ls
+             & map (\l -> let [a, b] = l & splitOn "/" & map read in (a, Set.singleton b))
+             & Map.fromListWith Set.union
+      reversed = mapReverseAll oneWay
+  in  Map.unionWith Set.union oneWay reversed
 
-day24 ls = "hello world"
+-- we have a map that includes
+--   a: {... b ...}  and
+--   b: {... a ...}
+removePair :: (Ord c) => (c, c) -> Map.Map c (Set.Set c) -> Map.Map c (Set.Set c)
+removePair (a, b) bridges = bridges
+                          & Map.update (Just . Set.delete b) a
+                          & Map.update (Just . Set.delete a) b
+
+srch :: (Ord c) => c -> Map.Map c (Set.Set c) -> [[(c, c)]]
+srch match remaining =
+  let links = fromMaybe Set.empty $ Map.lookup match remaining
+  in  if Set.null links then [[]]
+      else do
+        next <- Set.toList links
+        chains <- srch next (removePair (match, next) remaining)
+        return $ (match, next):chains
+  
+bridgeStrength (a, b) = a + b
+ 
+strength bs = sum $ map bridgeStrength bs
+
+day24 ls =
+  let bridges = parse ls
+      ans = srch 0 bridges
+      strs = map strength ans
+  in maximum strs
 
 {-
 -}
