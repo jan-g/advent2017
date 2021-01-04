@@ -322,4 +322,34 @@ main =
                     \p=<3,0,0>, v=<-1,0,0>, a=<0,0,0>" & lines
       it "runs the linear example" $ do
         Day20.day20b example `shouldBe` 1
+
+    describe "day 21" $ do
+      let g0 = loadMap ["abcd", "efgh", "ijkl", "mnop"]
+          d1 = diceMap (2, 2) g0
+      it "dices maps" $ do
+        Map.size d1 `shouldBe` 4
+        d1 Map.! (0,0) `shouldBe` loadMap ["ab", "ef"]
+        d1 Map.! (1,0) `shouldBe` loadMap ["cd", "gh"]
+        d1 Map.! (0,1) `shouldBe` loadMap ["ij", "mn"]
+        d1 Map.! (1,1) `shouldBe` loadMap ["kl", "op"]
+      it "undices maps" $ do
+        undiceMap d1 `shouldBe` g0
+      
+      let example = "../.# => ##./#../...\n\
+                    \.#./..#/### => #..#/..../..../#..#" & lines
+          rules = Day21.parse example
+          results = iterate (Day21.step rules) Day21.startGrid
+      it "computes the rules" $ do
+        let three = loadMap ["##.", "#..", "..."]
+        rules Map.! (loadMap ["#.", ".."]) `shouldBe` three
+        Map.size rules `shouldBe` 12  -- four for the 2x2, eight for the 3x3
+      it "steps correctly" $ do
+        results !! 1 `shouldBe` loadMap ["#..#", "....", "....", "#..#"]
+        results !! 2 `shouldBe` loadMap ["##.##."
+                                        ,"#..#.."
+                                        ,"......"
+                                        ,"##.##."
+                                        ,"#..#.."
+                                        ,"......"]
+        Day21.gridCount (results !! 2) `shouldBe` 12
         

@@ -125,6 +125,7 @@ y (a, b, c) = b
 z (a, b, c) = c
 
 -- Find integer solutions for 0 = a + bt + ct^2
+-- note: a, b, c reversed from the usual way people recite this formula
 solve2 :: Integer -> Integer -> Integer -> Set.Set Integer
 solve2 a b c =
   if a == 0 then (solve1 b c) `Set.union` (Set.singleton 0)
@@ -199,7 +200,7 @@ day20b ls =
                & Map.fromListWith Set.union
                & mapReverseAll
                & Map.toAscList
-      in  trace ("found " ++ show (length cols) ++ " collisions") $
+      in  -- trace ("found " ++ show (length cols) ++ " collisions") $
           cols
     removeCollisions keySet [] = keySet
     removeCollisions keySet ((_, collide):rest) =

@@ -17,6 +17,7 @@ module Lib
     , boundMap, offsetMap, normaliseMap
     , rotateLeftMap, rotateRightMap, rotate180Map
     , flipXMap, flipYMap
+    , subMap, diceMap, undiceMap
     , wordParser
     , euc
     , solveDiophantine
@@ -160,6 +161,30 @@ flipXMap m = m & Map.mapKeys (\(x, y) -> (-x, y)) & normaliseMap
 
 flipYMap :: (Num a, Ord a, Enum a) => Map.Map (a, a) c -> Map.Map (a, a) c
 flipYMap m = m & Map.mapKeys (\(x, y) -> (x, -y)) & normaliseMap
+
+-- return a normalised subgrid
+subMap ((x0, x1), (y0, y1)) grid =
+  Map.fromList [((x, y), grid Map.! (x, y)) | x <- [x0..x1], y <- [y0..y1]] & normaliseMap
+
+-- return a grid of grids
+diceMap (dx, dy) grid =
+  let ((x0, x1), (y0, y1)) = boundMap grid
+      (sx, sy) = (x1 - x0 + 1, y1 - y0 + 1)
+      (nx, ny) = (sx `div` dx, sy `div` dy)
+  in  
+  -- trace ("(x0,x1)=" ++ show (x0,x1) ++ " dx=" ++ show dx ++ " sx=" ++ show sx ++ " nx=" ++ show nx) $
+  Map.fromList [
+    ((i, j), subMap ((i * dx, i * dx + dx - 1), (j * dy, j * dy + dy - 1)) grid) |
+      i <- [0 .. nx-1], j <- [0..ny-1]
+  ]
+
+-- return a single grid
+undiceMap grid =
+  let ((x0, x1), (y0, y1)) = boundMap (grid Map.! (0,0))
+      (dx, dy) = (x1 - x0 + 1, y1 - y0 + 1)
+  in  Map.toList grid
+    & map (\((i, j), g) -> offsetMap (i * dx, j * dy) g)
+    & Map.unions
 
 
 wordParser :: ReadP String
