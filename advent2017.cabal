@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f175c4a5039f4b14c38cfc934f270b515133b84ab8cbbe453865b9ebf6b6bf03
+-- hash: c04f1dbbc9c67c507d7393d2600c726521d664dae2031dc9a2680af1ba98ed49
 
 name:           advent2017
 version:        0.1.0.0
@@ -68,6 +68,7 @@ library
     , heap >=1.0.4
     , hex-text
     , matrix
+    , primes >=0.2.1.0
     , sort
     , split
     , strings >=1.1
@@ -93,6 +94,7 @@ executable advent2017-exe
     , heap >=1.0.4
     , hex-text
     , matrix
+    , primes >=0.2.1.0
     , sort
     , split
     , strings >=1.1
@@ -120,6 +122,7 @@ test-suite advent2017-test
     , hex-text
     , hspec >=2.5.5
     , matrix
+    , primes >=0.2.1.0
     , sort
     , split
     , strings >=1.1

@@ -11,6 +11,7 @@ import Data.Maybe (catMaybes, isJust, fromJust, fromMaybe)
 import Text.ParserCombinators.ReadP as P
 import Numeric (readInt)
 import Data.Bits ((.&.), (.|.))
+import Data.Numbers.Primes (isPrime)
 
 import Lib
 
@@ -39,7 +40,8 @@ To begin, get your puzzle input.
 type Reg = Char
 type Value = Integer
 data Src = Reg Reg | Val Value deriving (Show, Eq)
-data Instr = Set Reg Src | Sub Reg Src | Mul Reg Src | Jnz Src Src deriving (Show, Eq)
+data Instr = Set Reg Src | Sub Reg Src | Mul Reg Src | Jnz Src Src
+  deriving (Show, Eq)
 type Prog = Map.Map Integer Instr
 
 parse ls = ls
@@ -70,12 +72,75 @@ run prog pc regs mulCount =
     eval (Reg r) = fetch r
     fetch r = fromMaybe 0 $ Map.lookup r regs
     store r v = regs & Map.insert r v
-  
+
 day23 ls =
   let prog = parse ls
   in  run prog 0 Map.empty 0
 
 {-
+--- Part Two ---
+
+Now, it's time to fix the problem.
+
+The debug mode switch is wired directly to register a. You flip the switch, which makes register a now start at 1 when the program is executed.
+
+Immediately, the coprocessor begins to overheat. Whoever wrote this program obviously didn't choose a very efficient implementation. You'll need to optimize the program if it has any hope of completing before Santa needs that printer working.
+
+The coprocessor's ultimate goal is to determine the final value left in register h once the program completes. Technically, if it had that... it wouldn't even need to run the program.
+
+After setting register a to 1, if the program were to run to completion, what value would be left in register h?
 -}
 
-day23b ls = "hello world"
+
+searchAndReplace1 seq1 seq2 as
+  | null as     = []
+  | take (length seq1) as == seq1 = seq2 ++ (drop (length seq1) as)
+  | otherwise   = (head as):searchAndReplace1 seq1 seq2 (tail as)
+
+
+day23b ls =
+  let b0 = 99 * 100 + 100000
+      c0 = b0 + 17000
+      ns = [b0, b0+17 .. c0]
+  in  length [i | i <- ns, not $ isPrime i]
+
+{-
+set b 99          b = 99
+set c b           c = b
+jnz a 2           if a:
+jnz 1 5
+mul b 100             b *= 100          b = 9900
+sub b -100000         b += 100000       b = 109900
+set c b               c = b             c = 109900
+sub c -17000          c += 17000        c = 126900
+                LOOP0:
+set f 1           f = 1
+set d 2           d = 2
+set e 2           e = 2
+                LOOP1:
+set g d           g = d
+mul g e           g *= e
+sub g b           g -= b
+jnz g 2           if g == 0:            if d * e = b, f = 0
+set f 0               f = 0
+sub e -1          e += 1
+set g e           g = e
+sub g b           g -= b
+jnz g -8          if g: goto LOOP1      LOOP1 to here: above, g, f, e altered
+                                        f = 0 => d is a factor of b
+sub d -1          d += 1
+set g d           g = d
+sub g b           g -= b
+jnz g -13         if g: goto LOOP1      LOOP1 to here: g, d altered
+jnz f 2           if f == 0:            f = 0 => b is composite
+sub h -1              h += 1            h counts these
+set g b           g = b
+sub g c           g -= c
+jnz g 2           if g:                 while b < c:
+jnz 1 3
+sub b -17           b += 17               b += 17
+jnz 1 -23           goto LOOP0
+
+In other words: counts the number of composite numbers between b0 and c0, inclusive,
+  looking at increments of 17 each time.
+-}
