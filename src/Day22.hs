@@ -1,3 +1,6 @@
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE LambdaCase #-}
+
 module Day22 where
 
 import Data.Function ((&))
@@ -115,7 +118,12 @@ Given your actual map, after 10000 bursts of activity, how many bursts cause a n
 To begin, get your puzzle input.
 -}
 
-parse ls = ls & loadMap
+parse ls =
+  let g = loadMap ls
+      ((_, x2), (_, y2)) = boundMap g
+      (x, y) = (x2 `div` 2, y2 `div` 2)
+      (dx, dy) = (0, -1)
+  in  ((x, y), (dx, dy), g)
 
 step ((x, y), (dx, dy), inf, g) =
   let (dx', dy') = if Set.member (x, y) g
@@ -128,16 +136,134 @@ step ((x, y), (dx, dy), inf, g) =
   in ((x + dx', y + dy'), (dx', dy'), inf', g')
 
 day22 ls =
-  let g = parse ls
-      ((_, x2), (_, y2)) = boundMap g
+  let ((x, y), (dx, dy), g) = parse ls
       cells = g & Map.filter (=='#') & Map.keysSet
-      (x, y) = (x2 `div` 2, y2 `div` 2)
-      (dx, dy) = (0, -1)
       moves = iterate step ((x, y), (dx, dy), 0, cells)
   in  infections (moves !! 10000)
-  where infections (_, _, i, _) = i
 
 {-
+--- Part Two ---
+
+As you go to remove the virus from the infected nodes, it evolves to resist your attempt.
+
+Now, before it infects a clean node, it will weaken it to disable your defenses. If it encounters an infected node, it will instead flag the node to be cleaned in the future. So:
+
+    Clean nodes become weakened.
+    Weakened nodes become infected.
+    Infected nodes become flagged.
+    Flagged nodes become clean.
+
+Every node is always in exactly one of the above states.
+
+The virus carrier still functions in a similar way, but now uses the following logic during its bursts of action:
+
+    Decide which way to turn based on the current node:
+        If it is clean, it turns left.
+        If it is weakened, it does not turn, and will continue moving in the same direction.
+        If it is infected, it turns right.
+        If it is flagged, it reverses direction, and will go back the way it came.
+    Modify the state of the current node, as described above.
+    The virus carrier moves forward one node in the direction it is facing.
+
+Start with the same map (still using . for clean and # for infected) and still with the virus carrier starting in the middle and facing up.
+
+Using the same initial state as the previous example, and drawing weakened as W and flagged as F, the middle of the infinite grid looks like this, with the virus carrier's position again marked with [ ]:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . # . . .
+. . . #[.]. . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+This is the same as before, since no initial nodes are weakened or flagged. The virus carrier is on a clean node, so it still turns left, instead weakens the node, and moves left:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . # . . .
+. . .[#]W . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+The virus carrier is on an infected node, so it still turns right, instead flags the node, and moves up:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . .[.]. # . . .
+. . . F W . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+This process repeats three more times, ending on the previously-flagged node and facing right:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . W W . # . . .
+. . W[F]W . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+Finding a flagged node, it reverses direction and cleans the node:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . W W . # . . .
+. .[W]. W . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+The weakened node becomes infected, and it continues in the same direction:
+
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . W W . # . . .
+.[.]# . W . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+
+Of the first 100 bursts, 26 will result in infection. Unfortunately, another feature of this evolved virus is speed; of the first 10000000 bursts, 2511944 will result in infection.
+
+Given your actual map, after 10000000 bursts of activity, how many bursts cause a node to become infected? (Do not count nodes that begin infected.)
 -}
 
-day22b ls = "hello world"
+data Cell = W | I | F
+--    Clean nodes become weakened.  (this is modelled by having an empty map entry)
+--    Weakened nodes become infected.
+--    Infected nodes become flagged.
+--    Flagged nodes become clean.
+
+step' (!(x, y), !(dx, dy), !inf, !g) =
+  case Map.lookup (x, y) g of
+    Nothing -> -- clean
+               -- If it is clean, it turns left.
+               let (dx', dy') = (dy, -dx) -- left
+               in  ((x+dx', y+dy'), (dx', dy'), inf, Map.insert (x, y) W g)
+    --         If it is weakened, it does not turn, and will continue moving in the same direction.
+    Just W  -> ((x+dx, y+dy), (dx, dy), inf+1, Map.insert (x, y) I g)
+    --         If it is infected, it turns right.
+    Just I  -> let (dx', dy') = (-dy, dx) -- right
+               in ((x+dx', y+dy'), (dx', dy'), inf, Map.insert (x, y) F g)
+    --         If it is flagged, it reverses direction, and will go back the way it came.
+    Just F  -> let (dx', dy') = (-dx, -dy)
+               in  ((x+dx', y+dy'), (dx', dy'), inf, Map.delete (x, y) g)         
+
+
+day22b ls =
+  let ((x, y), (dx, dy), g) = parse ls
+      cells = g & Map.filter (=='#') & Map.map (const I)
+      moves = iterate step' ((x, y), (dx, dy), 0, cells)
+  in  infections (moves !! 10000000)
+
+infections (_, _, i, _) = i

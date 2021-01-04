@@ -352,4 +352,12 @@ main =
                                         ,"#..#.."
                                         ,"......"]
         Day21.gridCount (results !! 2) `shouldBe` 12
+
+    describe "day 22" $ do
+      let example = ["..#", "#..", "..."]
+          (p, d, g) = Day22.parse example
+          cells = g & Map.filter (=='#') & Map.map (const Day22.I)
+          moves = iterate (Day22.step') (p, d, 0, cells)
+      it "runs for 100 moves" $ do
+        Day22.infections (moves !! 100) `shouldBe` 26
         
