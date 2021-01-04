@@ -25,6 +25,7 @@ module Lib
     , aStar
     , orthogonalMoves, kingsMoves, neighbours
     , swap
+    , squareRoot
     ) where
 
 import Data.Array
@@ -291,3 +292,17 @@ kingsMoves = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 
 neighbours dirs (x, y) = [(x+dx, y + dy) | (dx,dy) <- dirs]
 
 swap (a,b) = (b,a)
+
+
+
+squareRoot :: Integer -> Integer
+squareRoot 0 = 0
+squareRoot 1 = 1
+squareRoot n =
+   let twopows = iterate (^2) 2
+       (lowerRoot, lowerN) =
+          last $ takeWhile ((n>=) . snd) $ zip (1:twopows) twopows
+       newtonStep x = div (x + div n x) 2
+       iters = iterate newtonStep (squareRoot (div n lowerN) * lowerRoot)
+       isRoot r  =  r^2 <= n && n < (r+1)^2
+  in  head $ dropWhile (not . isRoot) iters

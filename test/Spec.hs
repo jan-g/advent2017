@@ -314,4 +314,12 @@ main =
       it "traces the example" $ do
         let (p0, d0) = Day19.start maze
         Day19.chase maze p0 d0 "" 0 `shouldBe` ("ABCDEF", 38)
+
+    describe "day 20" $ do
+      let example = "p=<-6,0,0>, v=<3,0,0>, a=<0,0,0>\n\    
+                    \p=<-4,0,0>, v=<2,0,0>, a=<0,0,0>\n\
+                    \p=<-2,0,0>, v=<1,0,0>, a=<0,0,0>\n\
+                    \p=<3,0,0>, v=<-1,0,0>, a=<0,0,0>" & lines
+      it "runs the linear example" $ do
+        Day20.day20b example `shouldBe` 1
         

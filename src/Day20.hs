@@ -11,6 +11,7 @@ import Data.Maybe (catMaybes, isJust, fromJust)
 import Text.ParserCombinators.ReadP as P
 import Numeric (readInt)
 import Data.Bits ((.&.), (.|.))
+import Debug.Trace (trace)
 
 import Lib
 
@@ -74,6 +75,134 @@ day20 ls = parse ls
 
 
 {-
+--- Part Two ---
+
+To simplify the problem further, the GPU would like to remove any particles that collide. Particles collide if their positions ever exactly match. Because particles are updated simultaneously, more than two particles can collide at the same time and place. Once particles collide, they are removed and cannot collide with anything else after that tick.
+
+For example:
+
+p=<-6,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=<-4,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=<-2,0,0>, v=< 1,0,0>, a=< 0,0,0>    (0)   (1)   (2)            (3)
+p=< 3,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+p=<-3,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=<-2,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=<-1,0,0>, v=< 1,0,0>, a=< 0,0,0>             (0)(1)(2)      (3)
+p=< 2,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+p=< 0,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=< 0,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=< 0,0,0>, v=< 1,0,0>, a=< 0,0,0>                       X (3)
+p=< 1,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+------destroyed by collision------
+------destroyed by collision------    -6 -5 -4 -3 -2 -1  0  1  2  3
+------destroyed by collision------                      (3)
+p=< 0,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+In this example, particles 0, 1, and 2 are simultaneously destroyed at the time and place marked X. On the next tick, particle 3 passes through unharmed.
+
+How many particles are left after all collisions are resolved?
 -}
 
-day20b ls = "hello world"
+{- At time t:
+   a = a0
+   v = v0 + ta
+   p = p0 + tv0 + a + 2a + ... ta =
+     = p0 + tv0 + t(1 + t)/2 . a
+
+Two particles collide iff:
+  p, v, a    and    q, w, b
+  p + vt + at(1 + t)/2 = q + wt + bt(1 + t)/2
+  or
+  0 = (p - q) + (v - w)t + (a - b) t(1 + t)/2
+  ... find integer solutions for all three dimensions. If there's a minimal t >= 0 then that's the point of collision
+-}
+
+x (a, b, c) = a
+y (a, b, c) = b
+z (a, b, c) = c
+
+-- Find integer solutions for 0 = a + bt + ct^2
+solve2 :: Integer -> Integer -> Integer -> Set.Set Integer
+solve2 a b c =
+  if a == 0 then (solve1 b c) `Set.union` (Set.singleton 0)
+  else
+  let s = b^2 - 4 * a * c
+  in  -- trace ("taking square root of " ++ show s) $
+      case srt s of
+        Nothing -> Set.empty
+        Just b2 -> -- trace ("b^2 - 4ac has sqrt " ++ show b2) $
+                   let (s1, s2) = (-b + b2, -b - b2)
+                       (q1, r1) = s1 `divMod` (2 * c)
+                       (q2, r2) = s2 `divMod` (2 * c)
+                   in  Set.union
+                         (if r1 == 0 then Set.singleton q1 else Set.empty)
+                         (if r2 == 0 then Set.singleton q2 else Set.empty)
+
+-- find integer solutions for 0 = a + bt
+solve1 a b =
+  let (q, r) = ((-a) `divMod` b)
+  in  if r == 0 then Set.singleton q else Set.empty
+
+data Solutions = Some (Set.Set Integer) | All deriving (Show, Eq, Ord)
+
+-- various solutions
+solve a b c =
+  -- trace ("solving " ++ show a ++ " + " ++ show b ++ "t + " ++ show c ++ "t^2 = 0") $
+  if c /= 0 then      Some $ solve2 a b c
+  else if b /= 0 then Some $ solve1 a b
+  else if a /= 0 then Some $ Set.empty
+  else All
+
+intsct All All = All
+intsct All (Some x) = Some x
+intsct (Some x) All = Some x
+intsct (Some x) (Some y) = Some (x `Set.intersection` y)
+
+srt n = if n < 0 then Nothing else
+        let a = squareRoot n
+        in  if a^2 == n then Just a else Nothing
+
+--   0 = (p - q) + (v - w)t + (a - b) t(1 + t)/2
+--     = (p-q)   + ((v-w)+(a-b)/2)t  + (a-b)/2 . t^2
+--     = 2(p-q)  + (2(v-w) + (a-b))t + (a-b) t^2
+collide p q =
+  -- trace ("colliding " ++ show p ++ " and " ++ show q) $
+  let
+      txs = crash x
+      tys = crash y
+      tzs = crash z
+  in  -- trace ("have " ++ show txs ++ ", " ++ show tys ++ ", " ++ show tzs) $
+      txs `intsct` tys `intsct` tzs
+  where
+    crash d = -- trace "doing one dimension" $
+              solve (2 * (d (pos p) - d (pos q)))
+                    (2 * (d (vel p) - d (vel q)) + (d (acc p) - d (acc q)))
+                    (d (acc p) - d (acc q))
+
+
+day20b ls =
+  let parts = parse ls & zip [0..] & Map.fromList
+      indexes = Map.keysSet parts
+      surviving = removeCollisions indexes (earliestCollision parts)
+  in Set.size surviving
+  where
+    positiveOnly (Some x) = Set.filter (>= 0) x
+    earliestCollision parts =
+      let cols = [(m, cs) | (m, p) <- Map.toList parts, (n, q) <- Map.toList parts,
+                                          m /= n,
+                                          let cs = positiveOnly (collide p q),
+                                          cs /= Set.empty
+                                          ]
+               & Map.fromListWith Set.union
+               & mapReverseAll
+               & Map.toAscList
+      in  trace ("found " ++ show (length cols) ++ " collisions") $
+          cols
+    removeCollisions keySet [] = keySet
+    removeCollisions keySet ((_, collide):rest) =
+      let reduced = collide `Set.intersection` keySet
+      in  if Set.size reduced < 2 then removeCollisions keySet rest
+          else removeCollisions (keySet `Set.difference` collide) rest
